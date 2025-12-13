@@ -1,0 +1,228 @@
+syntax = "proto3";
+
+package microservices;
+
+// Auth Service
+service AuthService {
+  rpc Register (RegisterRequest) returns (AuthResponse);
+  rpc Login (LoginRequest) returns (AuthResponse);
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc GetUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+  string role = 4;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string userId = 1;
+  string token = 2;
+  string message = 3;
+  string role = 4;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string userId = 2;
+  string email = 3;
+  string role = 4;
+}
+
+message GetUserByIdRequest {
+  string userId = 1;
+}
+
+message GetUserByIdResponse {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string role = 4;
+}
+
+// Product Service
+service ProductService {
+  rpc CreateProduct (CreateProductRequest) returns (ProductResponse);
+  rpc EditProduct (EditProductRequest) returns (ProductResponse);
+  rpc UpdateProductStatus (UpdateProductStatusRequest) returns (ProductResponse);
+  rpc GetProduct (GetProductRequest) returns (ProductResponse);
+  rpc SearchProducts (SearchProductsRequest) returns (ListProductsResponse);
+  rpc ListProducts (ListProductsRequest) returns (ListProductsResponse);
+}
+
+message CreateProductRequest {
+  string title = 1;
+  string description = 2;
+  double price = 3;
+  string imageUrl = 4;
+  string ownerId = 5;
+  string token = 6;
+}
+
+message EditProductRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  double price = 4;
+  string imageUrl = 5;
+  string token = 6;
+}
+
+message UpdateProductStatusRequest {
+  string id = 1;
+  string status = 2; // pending, accepted, delivered
+  string token = 3;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message ProductResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  double price = 4;
+  string imageUrl = 5;
+  string status = 6;
+  string ownerId = 7;
+  string createdAt = 8;
+}
+
+message SearchProductsRequest {
+  string query = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message ListProductsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message ListProductsResponse {
+  repeated ProductResponse products = 1;
+  int32 total = 2;
+}
+
+// Order Service
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (OrderResponse);
+  rpc CancelOrder (CancelOrderRequest) returns (OrderResponse);
+  rpc UpdateOrderStatus (UpdateOrderStatusRequest) returns (OrderResponse);
+  rpc GetOrder (GetOrderRequest) returns (OrderResponse);
+  rpc ListOrders (ListOrdersRequest) returns (ListOrdersResponse);
+  rpc ListUserOrders (ListUserOrdersRequest) returns (ListOrdersResponse);
+}
+
+message CreateOrderRequest {
+  string productId = 1;
+  int32 quantity = 2;
+  string token = 3;
+}
+
+message CancelOrderRequest {
+  string orderId = 1;
+  string token = 2;
+}
+
+message UpdateOrderStatusRequest {
+  string orderId = 1;
+  string status = 2; // pending, accepted, delivered, cancelled
+  string token = 3;
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message OrderResponse {
+  string id = 1;
+  string buyerId = 2;
+  string productId = 3;
+  int32 quantity = 4;
+  double totalPrice = 5;
+  string status = 6;
+  string paymentStatus = 7;
+  string stripePaymentIntentId = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+}
+
+message ListOrdersRequest {
+  string userId = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message ListOrdersResponse {
+  repeated OrderResponse orders = 1;
+  int32 total = 2;
+}
+
+message ListUserOrdersRequest {
+  string token = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+service ChatService {
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  rpc ListMessages (ListMessagesRequest) returns (ListMessagesResponse);
+  rpc ValidateChatPermission (ValidateChatPermissionRequest) returns (ValidateChatPermissionResponse);
+}
+
+message SendMessageRequest {
+  string receiverId = 1;
+  string message = 2;
+  string token = 3;
+}
+
+message SendMessageResponse {
+  string id = 1;
+  string senderId = 2;
+  string receiverId = 3;
+  string message = 4;
+  string createdAt = 5;
+}
+
+message ListMessagesRequest {
+  string otherUserId = 1;
+  string token = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message ListMessagesResponse {
+  repeated MessageResponse messages = 1;
+  int32 total = 2;
+}
+
+message MessageResponse {
+  string id = 1;
+  string senderId = 2;
+  string receiverId = 3;
+  string message = 4;
+  string createdAt = 5;
+}
+
+message ValidateChatPermissionRequest {
+  string senderId = 1;
+  string receiverId = 2;
+}
+
+message ValidateChatPermissionResponse {
+  bool allowed = 1;
+  string reason = 2;
+}
