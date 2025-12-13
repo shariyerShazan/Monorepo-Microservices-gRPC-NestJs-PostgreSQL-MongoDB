@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+//   url      = env("DATABASE_URL")
+}
+
+model Order {
+  id                     String   @id @default(uuid())
+  buyerId                String
+  productId              String
+  quantity               Int
+  totalPrice             Float
+  status                 String   @default("pending") 
+  paymentStatus          String   @default("unpaid") 
+  stripePaymentIntentId  String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("orders")
+}

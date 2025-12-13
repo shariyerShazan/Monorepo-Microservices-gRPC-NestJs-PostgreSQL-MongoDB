@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: microservices
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_DATABASE: auth-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/auth-db
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_EXPIRES_IN=7d
+      - GRPC_URL=0.0.0.0:50051
+    ports:
+      - "50051:50051"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/microservices
+      - GRPC_URL=0.0.0.0:50052
+      - AUTH_SERVICE_URL=auth-service:50051
+    ports:
+      - "50052:50052"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/microservices
+      - GRPC_URL=0.0.0.0:50053
+      - AUTH_SERVICE_URL=auth-service:50051
+      - PRODUCT_SERVICE_URL=product-service:50052
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    ports:
+      - "50053:50053"
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+    restart: unless-stopped
+
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile
+    container_name: chat-service
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/chat-db
+      - GRPC_URL=0.0.0.0:50054
+      - AUTH_SERVICE_URL=auth-service:50051
+      - ORDER_SERVICE_URL=order-service:50053
+    ports:
+      - "50054:50054"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongo_data:
