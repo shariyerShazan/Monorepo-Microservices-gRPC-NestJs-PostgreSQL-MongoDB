@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "sh scripts/setup-local.sh",
-    "start:dev": "concurrently \"npm run start:dev --prefix services/auth-service\" \"npm run start:dev --prefix services/product-service\" \"npm run start:dev --prefix services/order-service\"",
+    "start:dev": "node init && concurrently \"npm run start:dev --prefix services/auth-service\" \"npm run start:dev --prefix services/product-service\" \"npm run start:dev --prefix services/order-service\"",
     "docker:up": "docker-compose up --build",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
