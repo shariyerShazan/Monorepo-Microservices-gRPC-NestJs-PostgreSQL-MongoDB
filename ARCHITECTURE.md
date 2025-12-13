@@ -19,7 +19,7 @@ All services communicate using gRPC with Protocol Buffers for efficient binary s
 
 ### Service Dependencies
 
-\`\`\`
+```
 ┌──────────────┐
 │ Auth Service │
 │  (MongoDB)   │
@@ -45,13 +45,13 @@ All services communicate using gRPC with Protocol Buffers for efficient binary s
           │ Chat Service │
           │  (MongoDB)   │
           └──────────────┘
-\`\`\`
+```
 
 ## Data Models
 
 ### Auth Service (MongoDB)
 
-\`\`\`typescript
+```typescript
 User {
   _id: ObjectId
   email: string (unique)
@@ -62,11 +62,11 @@ User {
   createdAt: Date
   updatedAt: Date
 }
-\`\`\`
+```
 
 ### Product Service (PostgreSQL)
 
-\`\`\`sql
+```sql
 Product {
   id: UUID (primary key)
   title: VARCHAR
@@ -78,11 +78,11 @@ Product {
   createdAt: TIMESTAMP
   updatedAt: TIMESTAMP
 }
-\`\`\`
+```
 
 ### Order Service (PostgreSQL)
 
-\`\`\`sql
+```sql
 Order {
   id: UUID (primary key)
   buyerId: VARCHAR
@@ -95,11 +95,11 @@ Order {
   createdAt: TIMESTAMP
   updatedAt: TIMESTAMP
 }
-\`\`\`
+```
 
 ### Chat Service (MongoDB)
 
-\`\`\`typescript
+```typescript
 Message {
   _id: ObjectId
   senderId: string
@@ -107,22 +107,22 @@ Message {
   message: string
   createdAt: Date
 }
-\`\`\`
+```
 
 ## Authorization Flow
 
 ### 1. User Registration/Login
 
-\`\`\`
+```
 Client → Auth Service: Register/Login
 Auth Service: Hash password, create user
 Auth Service: Generate JWT with { userId, email, role }
 Auth Service → Client: Return token
-\`\`\`
+```
 
 ### 2. Protected Operation
 
-\`\`\`
+```
 Client → Service: Request with JWT token
 Service → Auth Service: ValidateToken(token)
 Auth Service: Verify JWT, lookup user
@@ -130,13 +130,13 @@ Auth Service → Service: Return { valid, userId, email, role }
 Service: Check role permissions
 Service: Execute business logic
 Service → Client: Return response
-\`\`\`
+```
 
 ## Business Logic Flows
 
 ### Create Order with Payment
 
-\`\`\`
+```
 1. Client → Order Service: CreateOrder { productId, quantity, token }
 2. Order Service → Auth Service: ValidateToken(token)
 3. Auth Service → Order Service: { valid, userId, role }
@@ -154,11 +154,11 @@ Service → Client: Return response
 13. Order Service: Update order:
     - paymentStatus = "paid"
     - status = "accepted"
-\`\`\`
+```
 
 ### Chat Permission Validation
 
-\`\`\`
+```
 1. Client → Chat Service: SendMessage { receiverId, message, token }
 2. Chat Service → Auth Service: ValidateToken(token)
 3. Auth Service → Chat Service: { valid, userId, role }
@@ -177,7 +177,7 @@ Service → Client: Return response
       - Deny (user must have purchased product)
 6. Chat Service → Database: Save message
 7. Chat Service → Client: Message sent confirmation
-\`\`\`
+```
 
 ## Security Considerations
 
@@ -269,3 +269,4 @@ Service → Client: Return response
    - Distributed tracing (Jaeger, Zipkin)
    - APM tools (New Relic, Datadog)
    - Real-time alerting
+
