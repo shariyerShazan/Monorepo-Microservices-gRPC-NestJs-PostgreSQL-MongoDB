@@ -38,7 +38,7 @@ All services communicate via **gRPC** using Protocol Buffers defined in `protos/
 
 ## Project Structure
 
-\`\`\`
+```
 /
 ├── README.md
 ├── ARCHITECTURE.md              # Detailed architecture documentation
@@ -97,7 +97,7 @@ All services communicate via **gRPC** using Protocol Buffers defined in `protos/
             │   ├── schemas/message.schema.ts
             │   └── dto/
             └── common/
-\`\`\`
+```
 
 ## New Features
 
@@ -111,9 +111,9 @@ All services communicate via **gRPC** using Protocol Buffers defined in `protos/
 - User restrictions enforced at service level
 
 ### 2. Product Status Workflow
-\`\`\`
+```
 pending → accepted → delivered
-\`\`\`
+```
 - Only admins can change status
 - Only "accepted" products can be ordered
 
@@ -148,69 +148,69 @@ pending → accepted → delivered
 ### Option 1: Docker (Recommended)
 
 1. **Clone and setup**
-   \`\`\`bash
+   ```bash
    git clone <repository-url>
    cd nestjs-microservices-monorepo
    cp .env.example .env
-   \`\`\`
+   ```
 
 2. **Configure Stripe** (in .env)
-   \`\`\`env
+   ```env
    STRIPE_SECRET_KEY=sk_test_your_key_here
    STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
-   \`\`\`
+   ```
 
 3. **Start all services**
-   \`\`\`bash
+   ```bash
    docker-compose up -d
-   \`\`\`
+   ```
 
 4. **Check health**
-   \`\`\`bash
+   ```bash
    docker-compose ps
-   \`\`\`
+   ```
 
 5. **View logs**
-   \`\`\`bash
+   ```bash
    docker-compose logs -f
-   \`\`\`
+   ```
 
 ### Option 2: Local Development
 
 1. **Install dependencies**
-   \`\`\`bash
+   ```bash
    npm install
    cd services/auth-service && npm install && cd ../..
    cd services/product-service && npm install && cd ../..
    cd services/order-service && npm install && cd ../..
    cd services/chat-service && npm install && cd ../..
-   \`\`\`
+   ```
 
 2. **Start databases**
-   \`\`\`bash
+   ```bash
    docker-compose up postgres mongo -d
-   \`\`\`
+   ```
 
 3. **Setup environment**
-   \`\`\`bash
+   ```bash
    cp .env.example .env
    # Edit .env with your configuration
-   \`\`\`
+   ```
 
 4. **Generate Prisma clients**
-   \`\`\`bash
+   ```bash
    cd services/product-service && npx prisma generate && cd ../..
    cd services/order-service && npx prisma generate && cd ../..
-   \`\`\`
+   ```
 
 5. **Run migrations**
-   \`\`\`bash
+   ```bash
    cd services/product-service && npx prisma migrate dev && cd ../..
    cd services/order-service && npx prisma migrate dev && cd ../..
-   \`\`\`
+   ```
 
 6. **Start services** (in separate terminals)
-   \`\`\`bash
+   ```bash
    # Terminal 1
    cd services/auth-service && npm run start:dev
    
@@ -222,44 +222,44 @@ pending → accepted → delivered
    
    # Terminal 4
    cd services/chat-service && npm run start:dev
-   \`\`\`
+   ```
 
 ## Complete API Examples
 
 ### 1. Register Admin User
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "email": "admin@example.com",
   "password": "admin123",
   "name": "Admin User",
   "role": "admin"
 }' localhost:50051 microservices.AuthService/Register
-\`\`\`
+```
 
 **Response:**
-\`\`\`json
+```json
 {
   "userId": "507f1f77bcf86cd799439011",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "message": "User registered successfully",
   "role": "admin"
 }
-\`\`\`
+```
 
 ### 2. Register Regular User
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "email": "user@example.com",
   "password": "user123",
   "name": "Regular User"
 }' localhost:50051 microservices.AuthService/Register
-\`\`\`
+```
 
 ### 3. Create Product (Admin Only)
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "title": "Gaming Laptop",
   "description": "High-performance laptop for gaming",
@@ -268,40 +268,40 @@ grpcurl -plaintext -d '{
   "ownerId": "507f1f77bcf86cd799439011",
   "token": "ADMIN_JWT_TOKEN"
 }' localhost:50052 microservices.ProductService/CreateProduct
-\`\`\`
+```
 
 ### 4. Update Product Status (Admin Only)
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "id": "product-uuid",
   "status": "accepted",
   "token": "ADMIN_JWT_TOKEN"
 }' localhost:50052 microservices.ProductService/UpdateProductStatus
-\`\`\`
+```
 
 ### 5. Search Products
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "query": "laptop",
   "page": 1,
   "limit": 10
 }' localhost:50052 microservices.ProductService/SearchProducts
-\`\`\`
+```
 
 ### 6. Create Order with Payment
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "productId": "product-uuid",
   "quantity": 1,
   "token": "USER_JWT_TOKEN"
 }' localhost:50053 microservices.OrderService/CreateOrder
-\`\`\`
+```
 
 **Response includes Stripe PaymentIntent:**
-\`\`\`json
+```json
 {
   "id": "order-uuid",
   "buyerId": "user-id",
@@ -312,100 +312,100 @@ grpcurl -plaintext -d '{
   "paymentStatus": "unpaid",
   "stripePaymentIntentId": "pi_xxxxx"
 }
-\`\`\`
+```
 
 ### 7. Cancel Order (Before Approval)
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "orderId": "order-uuid",
   "token": "USER_JWT_TOKEN"
 }' localhost:50053 microservices.OrderService/CancelOrder
-\`\`\`
+```
 
 ### 8. Update Order Status (Admin Only)
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "orderId": "order-uuid",
   "status": "delivered",
   "token": "ADMIN_JWT_TOKEN"
 }' localhost:50053 microservices.OrderService/UpdateOrderStatus
-\`\`\`
+```
 
 ### 9. Send Message (User to Admin)
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "receiverId": "admin-user-id",
   "message": "Hello, I have a question about my order",
   "token": "USER_JWT_TOKEN"
 }' localhost:50054 microservices.ChatService/SendMessage
-\`\`\`
+```
 
 **Note:** This will fail if user hasn't received a delivered order!
 
 ### 10. Send Message (Admin to User)
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "receiverId": "user-id",
   "message": "Hello! How can I help you?",
   "token": "ADMIN_JWT_TOKEN"
 }' localhost:50054 microservices.ChatService/SendMessage
-\`\`\`
+```
 
 ### 11. List Messages
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "otherUserId": "admin-user-id",
   "token": "USER_JWT_TOKEN",
   "page": 1,
   "limit": 50
 }' localhost:50054 microservices.ChatService/ListMessages
-\`\`\`
+```
 
 ### 12. Validate Chat Permission
 
-\`\`\`bash
+```bash
 grpcurl -plaintext -d '{
   "senderId": "user-id",
   "receiverId": "admin-id"
 }' localhost:50054 microservices.ChatService/ValidateChatPermission
-\`\`\`
+```
 
 ## Stripe Webhook Setup
 
 ### Local Development with Stripe CLI
 
 1. **Install Stripe CLI**
-   \`\`\`bash
+   ```bash
    brew install stripe/stripe-cli/stripe
-   \`\`\`
+   ```
 
 2. **Login to Stripe**
-   \`\`\`bash
+   ```bash
    stripe login
-   \`\`\`
+   ```
 
 3. **Forward webhooks**
-   \`\`\`bash
+   ```bash
    stripe listen --forward-to localhost:3000/webhook/stripe
-   \`\`\`
+   ```
 
 4. **Copy webhook secret**
    The CLI will output a webhook secret. Add it to your `.env`:
-   \`\`\`env
+   ```env
    STRIPE_WEBHOOK_SECRET=whsec_xxxxx
-   \`\`\`
+   ```
 
 ### Production Webhook
 
 Configure webhook endpoint in Stripe Dashboard:
-\`\`\`
+```
 https://your-domain.com/webhook/stripe
-\`\`\`
+```
 
 Events to listen for:
 - `payment_intent.succeeded`
@@ -414,7 +414,7 @@ Events to listen for:
 
 Complete `.env` configuration:
 
-\`\`\`env
+```env
 # MongoDB
 MONGODB_URI=mongodb://localhost:27017/auth-db
 
@@ -434,13 +434,13 @@ AUTH_SERVICE_URL=localhost:50051
 PRODUCT_SERVICE_URL=localhost:50052
 ORDER_SERVICE_URL=localhost:50053
 CHAT_SERVICE_URL=localhost:50054
-\`\`\`
+```
 
 ## Database Schemas
 
 ### Auth Service (MongoDB)
 
-\`\`\`typescript
+```typescript
 User {
   _id: ObjectId
   email: string (unique)
@@ -451,11 +451,11 @@ User {
   createdAt: Date
   updatedAt: Date
 }
-\`\`\`
+```
 
 ### Product Service (PostgreSQL)
 
-\`\`\`sql
+```sql
 Product {
   id: UUID (primary key)
   title: VARCHAR
@@ -467,11 +467,11 @@ Product {
   createdAt: TIMESTAMP
   updatedAt: TIMESTAMP
 }
-\`\`\`
+```
 
 ### Order Service (PostgreSQL)
 
-\`\`\`sql
+```sql
 Order {
   id: UUID (primary key)
   buyerId: VARCHAR
@@ -484,11 +484,11 @@ Order {
   createdAt: TIMESTAMP
   updatedAt: TIMESTAMP
 }
-\`\`\`
+```
 
 ### Chat Service (MongoDB)
 
-\`\`\`typescript
+```typescript
 Message {
   _id: ObjectId
   senderId: string
@@ -496,7 +496,7 @@ Message {
   message: string
   createdAt: Date
 }
-\`\`\`
+```
 
 ## Business Rules
 
@@ -575,7 +575,7 @@ All services return proper gRPC status codes:
 
 ## Development Commands
 
-\`\`\`bash
+```bash
 # Install all dependencies
 npm run bootstrap
 
@@ -602,13 +602,13 @@ npm run docker:logs
 
 # Clean Docker volumes
 npm run docker:clean
-\`\`\`
+```
 
 ## Monitoring & Debugging
 
 ### View Logs
 
-\`\`\`bash
+```bash
 # All services
 docker-compose logs -f
 
@@ -617,11 +617,11 @@ docker-compose logs -f auth-service
 docker-compose logs -f product-service
 docker-compose logs -f order-service
 docker-compose logs -f chat-service
-\`\`\`
+```
 
 ### Database Access
 
-\`\`\`bash
+```bash
 # PostgreSQL
 docker exec -it postgres psql -U postgres -d microservices
 
@@ -630,7 +630,7 @@ docker exec -it mongo mongosh auth-db
 
 # Prisma Studio
 cd services/product-service && npx prisma studio
-\`\`\`
+```
 
 ## Production Considerations
 
